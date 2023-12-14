@@ -64,7 +64,7 @@ orbitControls.rotateSpeed = 0.5;
 orbitControls.enableZoom = true;
 orbitControls.zoomSpeed = 0.5;
 orbitControls.minDistance = 100;
-orbitControls.maxDistance = 500;
+orbitControls.maxDistance = 10000;
 orbitControls.target = new THREE.Vector3(0, 0, 0);
 const dragControls = new DragControls(objects, camera, renderer.domElement);
 
@@ -103,17 +103,17 @@ const foodMaterial = new THREE.MeshStandardMaterial({
 });
 //Sphere rendering properties
 const sphereMaterial = new THREE.MeshNormalMaterial();
-const sphereGeometry = new THREE.SphereGeometry(2, 64, 64);
+const sphereGeometry = new THREE.SphereGeometry(3, 64, 64);
 
 //create spheres
 for (let i = 0; i < 50; i++) {
   balls[i] = new THREE.Mesh(sphereGeometry, sphereMaterial.clone());
-  mass[i] = Math.random() * 10;
+  mass[i] = Math.random() * 5;
   const x = 50 - Math.random() * 100;
   const y = 50 - Math.random() * 100;
   const z = 50 - Math.random() * 100;
   balls[i].position.set(x, y, z);
-  vel[i] = new THREE.Vector3(x, y, z);
+  vel[i] = new THREE.Vector3(0, 0, 0);
   acc[i] = new THREE.Vector3(0, 0, 0);
 
   // adding custome properties to use later
@@ -124,8 +124,9 @@ for (let i = 0; i < 50; i++) {
 }
 
 //create food
+let foodMass = 50;
 food = new THREE.Mesh(geometry, foodMaterial.clone());
-food.position.set(0, 0, 0);
+food.position.set(2, 4, 2);
 objects.push(food);
 scene.add(food);
 
@@ -168,14 +169,30 @@ function render() {
 
 //animation
 const animate = () => {
+  requestAnimationFrame(animate);
+
   for (let i = 0; i < balls.length; i++) {
     //gravity calculation
     //attraction
-    let force = balls[i].position;
+    let f = new THREE.Vector3();
+    f.subVectors(balls[i].position, food.position);
     let dist = balls[i].position.distanceTo(food.position);
-    let power = 
+    let g = 1;
+    let power = ((g * (mass[i] * foodMass)) / dist) ^ 2;
+    f.normalize();
+    console.log(f);
+    f.multiplyScalar(power);
+
+    let force = f;
+    acc[i] = force.divideScalar(mass[i]);
+
+    //apply force and update
+    vel[i].add(acc[i]);
+
+    acc[i] = new THREE.Vector3(0, 0, 0);
+
+    balls[i].position.add(vel[i]);
   }
-  requestAnimationFrame(animate);
 
   renderer.render(scene, camera);
 };
