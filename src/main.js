@@ -124,7 +124,7 @@ for (let i = 0; i < 50; i++) {
 }
 
 //create food
-let foodMass = 50;
+let foodMass = 10;
 food = new THREE.Mesh(geometry, foodMaterial.clone());
 food.position.set(2, 4, 2);
 objects.push(food);
@@ -175,13 +175,21 @@ const animate = () => {
     //gravity calculation
     //attraction
     let f = new THREE.Vector3();
-    f.subVectors(balls[i].position, food.position);
+    f.subVectors(food.position, balls[i].position);
     let dist = balls[i].position.distanceTo(food.position);
-    let g = 1;
-    let power = ((g * (mass[i] * foodMass)) / dist) ^ 2;
+    //constrain
+    if (dist < 100) {
+      dist = 200;
+    }
+    if (dist > 1000) {
+      dist = 500;
+    }
+
+    let g = 10;
+    let power = (g * (mass[i] * foodMass)) / (dist * dist);
     f.normalize();
-    console.log(f);
     f.multiplyScalar(power);
+    console.log(food.position);
 
     let force = f;
     acc[i] = force.divideScalar(mass[i]);
