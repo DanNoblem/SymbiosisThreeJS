@@ -2,6 +2,7 @@ import * as THREE from "three";
 import "./style.css";
 import { OrbitControls } from "three/addons/controls/OrbitControls";
 import { DragControls } from "three/addons/controls/DragControls.js";
+import { TrailRenderer } from "./TrailRenderer.js";
 
 //post processing effects
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
@@ -93,20 +94,22 @@ let mass = [];
 let vel = [];
 let acc = [];
 
+let trails = [];
+
 let food;
 
 const geometry = new THREE.BoxGeometry(4, 4, 4);
 const foodMaterial = new THREE.MeshStandardMaterial({
-  color: "red",
-  roughness: 0.2,
-  metalness: 0.8,
+  color: "green",
+  roughness: 0.8,
+  metalness: 0.2,
 });
 //Sphere rendering properties
-const sphereMaterial = new THREE.MeshNormalMaterial();
-const sphereGeometry = new THREE.SphereGeometry(3, 64, 64);
+const sphereMaterial = new THREE.MeshStandardMaterial({ color: "black" });
+const sphereGeometry = new THREE.SphereGeometry(0.5, 64, 64);
 
 //create spheres
-for (let i = 0; i < 50; i++) {
+for (let i = 0; i < 20; i++) {
   balls[i] = new THREE.Mesh(sphereGeometry, sphereMaterial.clone());
   mass[i] = Math.random() * 5;
   const x = 50 - Math.random() * 100;
@@ -121,10 +124,44 @@ for (let i = 0; i < 50; i++) {
   balls[i].isAnimating = false;
 
   scene.add(balls[i]);
+
+  //Create Trail
+  // specify points to create planar trail-head geometry
+  const trailHeadGeometry = [];
+  trailHeadGeometry.push(
+    new THREE.Vector3(-1.0, 0.0, 0.0),
+    new THREE.Vector3(0.0, 0.0, 0.0),
+    new THREE.Vector3(1.0, 0.0, 0.0)
+  );
+
+  // create the trail renderer object
+  trails[i] = new TrailRenderer(scene, false);
+
+  // set how often a new trail node will be added and existing nodes will be updated
+  trails[i].setAdvanceFrequency(100);
+
+  // create material for the trail renderer
+  const trailMaterial = TrailRenderer.createBaseMaterial();
+
+  // specify length of trail
+  const trailLength = 150;
+
+  // initialize the trail
+  trails[i].initialize(
+    trailMaterial,
+    trailLength,
+    false,
+    0,
+    trailHeadGeometry,
+    balls[i]
+  );
+
+  // activate the trail
+  trails[i].activate();
 }
 
 //create food
-let foodMass = 10;
+let foodMass = 70;
 food = new THREE.Mesh(geometry, foodMaterial.clone());
 food.position.set(2, 4, 2);
 objects.push(food);
@@ -189,8 +226,6 @@ const animate = () => {
     let power = (g * (mass[i] * foodMass)) / (dist * dist);
     f.normalize();
     f.multiplyScalar(power);
-    console.log(food.position);
-
     let force = f;
     acc[i] = force.divideScalar(mass[i]);
 
@@ -200,6 +235,8 @@ const animate = () => {
     acc[i] = new THREE.Vector3(0, 0, 0);
 
     balls[i].position.add(vel[i]);
+
+    trails[i].update();
   }
 
   renderer.render(scene, camera);
