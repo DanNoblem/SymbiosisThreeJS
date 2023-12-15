@@ -44,9 +44,9 @@ const camera = new THREE.PerspectiveCamera(
 camera.position.set(0, 0, 100);
 
 // axis helper -> X: red, Y: green, Z: blue
-const axesHelper = new THREE.AxesHelper(5);
-axesHelper.position.y = 0.001;
-scene.add(axesHelper);
+// const axesHelper = new THREE.AxesHelper(5);
+// axesHelper.position.y = 0.001;
+// scene.add(axesHelper);
 
 // light
 const ambientLight = new THREE.AmbientLight("white", 0.2);
