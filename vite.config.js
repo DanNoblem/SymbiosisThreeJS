@@ -5,15 +5,14 @@ export default defineConfig({
   server: {
     port: 3000,
   },
-  root: "/github-page/",
+  root: resolve(__dirname, "src"),
   publicDir: resolve(__dirname, "public"),
   build: {
-    outDir: "../src",
+    outDir: "../dist",
     rollupOptions: {
       input: {
         main: resolve(__dirname, "src/index.html"),
       },
     },
   },
-  publicDir: resolve(__dirname, "public"),
 });
